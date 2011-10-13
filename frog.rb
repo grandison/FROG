@@ -93,7 +93,7 @@ class ExtendedKey
     (0..7).each do |index|
       xorBu = array[index * 288, 16]
       substPermu = make_permutation array[index * 288 + 16, 256]
-      substPermu = self.make_permutation(substPermu) if decrypting
+      substPermu = self.invert_permutation(substPermu) if decrypting
       bombPermu = make_permutation array[index * 288 + 272, 16]
       validate bombPermu
       result += xorBu + substPermu + bombPermu
@@ -102,9 +102,12 @@ class ExtendedKey
   end
 
   def self.make_permutation array
+    use = (0..array.size-1).to_a
+    index = 0
     result = []
     (0..array.size-1).each do |i|
-      result[array[i]] = i
+      index = (index + array[i]) % use.size
+      result[i] = use.delete_at index
     end
     result
   end
@@ -144,8 +147,8 @@ class ExtendedKey
 
 end
 
-#key_s = ExtendedKey.extendKey("a"*16)
-#key_d = ExtendedKey.extendKey("a"*16)
-#p Frog.shifr("test"*4, key_s).pack("c*")
+key_s = ExtendedKey.extendKey("a"*16)
+key_d = ExtendedKey.extendKey("a"*16)
+Frog.shifr("test"*4, key_s).pack("c*")
 #p Frog.deshifr(Frog.shifr("test"*4, key_s).pack("c*"), key_d).pack("c*")
 
