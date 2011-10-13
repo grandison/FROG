@@ -17,8 +17,8 @@ class Frog
 #        else
 #          result[0] ^= result[index]
 #        end
-        k = b[index]
-        result[k] ^= result[index]
+#        k = b[index]
+#        result[k] ^= result[index]
       end
     end
     result
@@ -28,14 +28,14 @@ class Frog
     key_bytes = key.bytes.to_a
     block_bytes = block.bytes.to_a
     result = block_bytes.dup
-    (0..7).each do |i|
+    7.downto(0).each do |i|
       current_key = key_bytes[i * 288, 288]
       x = current_key[0,16]
       s = current_key[16,256]
       b = current_key[272,16]
-      (0..15).each do |index|
-        k = b[index]
-        result[k] ^= result[index]
+      15.downto(0).each do |index|
+#        k = b[index]
+#        result[k] ^= result[index]
 #        if index<15
 #          result[index+1] ^= result[index]
 #        else
@@ -102,12 +102,9 @@ class ExtendedKey
   end
 
   def self.make_permutation array
-    use = (0..array.size-1).to_a
-    index = 0
     result = []
     (0..array.size-1).each do |i|
-      index = (index + array[i]) % use.size
-      result[i] = use.delete_at index
+      result[array[i]] = i
     end
     result
   end
@@ -147,9 +144,8 @@ class ExtendedKey
 
 end
 
-key_s = ExtendedKey.extendKey("a"*16)
-key_d = ExtendedKey.extendKey("a"*16)
-p key_s == key_d
+#key_s = ExtendedKey.extendKey("a"*16)
+#key_d = ExtendedKey.extendKey("a"*16)
 #p Frog.shifr("test"*4, key_s).pack("c*")
-p Frog.deshifr(Frog.shifr("test"*4, key_s).pack("c*"), key_d).pack("c*")
+#p Frog.deshifr(Frog.shifr("test"*4, key_s).pack("c*"), key_d).pack("c*")
 
