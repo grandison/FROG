@@ -4,20 +4,22 @@ class Frog
     key_bytes = key.bytes.to_a
     block_bytes = block.bytes.to_a
     result = block_bytes.dup
-    (0..7).each do |index|
-      current_key = key_bytes[index * 288, 288]
+    (0..7).each do |i|
+      current_key = key_bytes[i * 288, 288]
       x = current_key[0,16]
       s = current_key[16,256]
       b = current_key[272,16]
-      result[index] &= x[index]
-      result[index] = s[result[index]]
-      if index<15
-        result[index+1] &= result[index]
-      else
-        result[0] &= result[index]
+      (0..15).each do |index|
+#        result[index] ^= x[index]
+#        result[index] = s[result[index]]
+#        if index<15
+#          result[index+1] ^= result[index]
+#        else
+#          result[0] ^= result[index]
+#        end
+        k = b[index]
+        result[k] ^= result[index]
       end
-      k = b[index]
-      result[k] &= result[index]
     end
     result
   end
@@ -26,20 +28,22 @@ class Frog
     key_bytes = key.bytes.to_a
     block_bytes = block.bytes.to_a
     result = block_bytes.dup
-    (0..7).each do |index|
-      current_key = key_bytes[index * 288, 288]
+    (0..7).each do |i|
+      current_key = key_bytes[i * 288, 288]
       x = current_key[0,16]
       s = current_key[16,256]
       b = current_key[272,16]
-      k = b[index]
-      result[k] &= result[index]
-      if index<15
-        result[index+1] &= result[index]
-      else
-        result[0] &= result[index]
+      (0..15).each do |index|
+        k = b[index]
+        result[k] ^= result[index]
+#        if index<15
+#          result[index+1] ^= result[index]
+#        else
+#          result[0] ^= result[index]
+#        end
+#        result[index] = s[result[index]]
+#        result[index] ^= x[index]
       end
-      result[index] = s[result[index]]
-      result[index] &= x[index]
     end
     result
   end
@@ -70,12 +74,11 @@ class ExtendedKey
     r = (@random_table * (2304/@random_table.size + 1))[0,2304]
     w = []
     (0..2303).each do |index|
-      w[index] = k[index] & r[index]
+      w[index] = k[index] ^ r[index]
     end
     p = self.make_internal_key(w, decrypting)
     buffer = key.dup
-    buffer[0] += 8 * key.size
-    buffer.concat([0] * (16 - key.size))
+    buffer[0] += key.size
     result = []
     while result.size < 2304
     buffer = Frog.shifr buffer.pack("c*"), p.pack("c*")
@@ -145,6 +148,8 @@ class ExtendedKey
 end
 
 key_s = ExtendedKey.extendKey("a"*16)
-key_d = ExtendedKey.extendKey("a"*16, true)
+key_d = ExtendedKey.extendKey("a"*16)
+p key_s == key_d
+#p Frog.shifr("test"*4, key_s).pack("c*")
 p Frog.deshifr(Frog.shifr("test"*4, key_s).pack("c*"), key_d).pack("c*")
 
