@@ -10,15 +10,15 @@ class Frog
       s = current_key[16,256]
       b = current_key[272,16]
       (0..15).each do |index|
-#        result[index] ^= x[index]
-#        result[index] = s[result[index]]
-#        if index<15
-#          result[index+1] ^= result[index]
-#        else
-#          result[0] ^= result[index]
-#        end
-#        k = b[index]
-#        result[k] ^= result[index]
+        result[index] ^= x[index]
+        result[index] = s[result[index]]
+        if index<15
+          result[index+1] ^= result[index]
+        else
+          result[0] ^= result[index]
+        end
+        k = b[index]
+        result[k] ^= result[index]
       end
     end
     result
@@ -34,15 +34,15 @@ class Frog
       s = current_key[16,256]
       b = current_key[272,16]
       15.downto(0).each do |index|
-#        k = b[index]
-#        result[k] ^= result[index]
-#        if index<15
-#          result[index+1] ^= result[index]
-#        else
-#          result[0] ^= result[index]
-#        end
-#        result[index] = s[result[index]]
-#        result[index] ^= x[index]
+        k = b[index]
+        result[k] ^= result[index]
+        if index<15
+          result[index+1] ^= result[index]
+        else
+          result[0] ^= result[index]
+        end
+        result[index] = s[result[index]]
+        result[index] ^= x[index]
       end
     end
     result
@@ -76,7 +76,7 @@ class ExtendedKey
     (0..2303).each do |index|
       w[index] = k[index] ^ r[index]
     end
-    p = self.make_internal_key(w, decrypting)
+    p = self.make_internal_key(w, false)
     buffer = key.dup
     buffer[0] += key.size
     result = []
@@ -125,7 +125,8 @@ class ExtendedKey
     index = 0
     (0..bombPermu.size - 2).each do |i|
       if bombPermu[index] == 0
-        k = used.index false
+        k = (index + 1) % bombPermu.size
+        k = ((k + 1) % bombPermu.size) until (used[k] == false)
         bombPermu[index] = k
         l = k
         while bombPermu[l] != k
@@ -148,7 +149,7 @@ class ExtendedKey
 end
 
 key_s = ExtendedKey.extendKey("a"*16)
-key_d = ExtendedKey.extendKey("a"*16)
-Frog.shifr("test"*4, key_s).pack("c*")
-#p Frog.deshifr(Frog.shifr("test"*4, key_s).pack("c*"), key_d).pack("c*")
+key_d = ExtendedKey.extendKey("a"*16, true)
+p shifr = Frog.shifr("test"*4, key_s).pack("c*")
+p Frog.deshifr(shifr , key_d).pack("c*")
 
