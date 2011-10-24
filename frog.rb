@@ -148,8 +148,8 @@ class ExtendedKey
 
 end
 
-key_s = ExtendedKey.extendKey("a"*16)
-key_d = ExtendedKey.extendKey("a"*16, true)
-p shifr = Frog.shifr("test"*4, key_s).pack("c*")
-p Frog.deshifr(shifr , key_d).pack("c*")
+#key_s = ExtendedKey.extendKey("a"*16)
+#key_d = ExtendedKey.extendKey("a"*16, true)
+#p shifr = Frog.shifr("test"*4, key_s).pack("c*")
+#p Frog.deshifr(shifr , key_d).pack("c*")
 
