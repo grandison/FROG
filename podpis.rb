@@ -28,17 +28,17 @@ class Pow
   end
 end
 class Podpis
-  @p = 51
-  @q = 5
-  @g = 5**((@p-1)/@q)%@p
-  @x = 19
+  @p = 340282366920938463463374607431768211507
+  @q = 12275703273579557140363
+  @g = 1 + rand(@p-2)
+  @x = 1 + rand(@q-2)
   @y = Pow.pow(@g,@x,@p)
   def self.podpis text
-    k = 2 + rand(@p-1)
+    k = 67
     h = MyHash.hash(text) % @p
     r = Pow.pow(@g,k,@p)
     po = r % @q
-    s = ((po*h*k-1)*Pow.obr(po*@x, @p)) % @q
+    s = (po * k - h * @x) % (@p-1)
     return {:r => r, :s => s}
   end
 
@@ -47,9 +47,11 @@ class Podpis
     r = result[:r]
     s = result[:s]
     po = r % @q
-    Pow.pow(r,po*h,@p) == (@g * Pow.pow(@y,r*po,@p))%@p
+    p "first", Pow.pow(r,po,@p)
+    p "second", (Pow.pow(@g, s, @p) * Pow.pow(@y, h ,@p)) % @p
   end
 end
-res = Podpis.podpis "12"*1000
-p Podpis.check res, "12"*1000
+res = Podpis.podpis "10"
+Podpis.check res, "10"
+#p Pow.pow(-2,3,51)
 
