@@ -1,4 +1,26 @@
 require './my_hash.rb'
+class Fixnum
+  def to_byte_array
+    num = self 
+    result = [] 
+    begin 
+      result << (num & 0xff) 
+      num >>= 8 
+    end until result.size == self.size
+    result.reverse 
+  end 
+end
+class Bignum
+  def to_byte_array
+    num = self 
+    result = [] 
+    begin 
+      result << (num & 0xff) 
+      num >>= 8 
+    end until result.size == self.size
+    result.reverse 
+  end  
+end
 class Pow
   def self.pow a,k,n
     b = 1
@@ -30,28 +52,44 @@ end
 class Podpis
   @p = 340282366920938463463374607431768211507
   @q = 12275703273579557140363
-  @g = 1 + rand(@p-2)
+  @gamma = 2 + rand(@p-2)
+  @g = Pow.pow(@gamma, (@p-1)/@q, @p)
   @x = 1 + rand(@q-2)
   @y = Pow.pow(@g,@x,@p)
   def self.podpis text
-    k = 67
-    h = MyHash.hash(text) % @p
+    k = 1 + rand(@q-1)
+    h = MyHash.hash(text)
     r = Pow.pow(@g,k,@p)
     po = r % @q
-    s = (po * k - h * @x) % (@p-1)
+    s = ((h*k-po) * Pow.obr(@x, @q)) % (@q)
     return {:r => r, :s => s}
   end
 
   def self.check result, text
-    h = MyHash.hash(text) % @p
+    h = MyHash.hash(text)
     r = result[:r]
     s = result[:s]
     po = r % @q
-    p "first", Pow.pow(r,po,@p)
-    p "second", (Pow.pow(@g, s, @p) * Pow.pow(@y, h ,@p)) % @p
+    Pow.pow(r,h,@p) == (Pow.pow(@g, r, @p) * Pow.pow(@y, s ,@p)) % @p
   end
 end
-res = Podpis.podpis "10"
-Podpis.check res, "10"
-#p Pow.pow(-2,3,51)
 
+class Rejim
+  @key = "keys"*4
+  def self.read text
+    blocks_kol = text.size/16
+    result = []
+    g = "0"*16
+    extendKey = ExtendedKey.extendKey @key
+    1.upto(blocks_kol) do |i|
+      g = Frog.shifr(g, extendKey)
+      text[16*(i-1),16].bytes.to_a.each_with_index{|t,i| result<< (t^g[i])}
+      g = g.pack("c*")
+    end
+    result.pack("c*")
+  end
+end
+
+text = "test"*4
+podpis = Podpis.podpis(text)
+p podpis[:s].to_byte_array

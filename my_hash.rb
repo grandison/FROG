@@ -30,4 +30,3 @@ class MyHash
     h.pack("c*")
   end
 end
-
