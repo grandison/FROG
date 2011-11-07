@@ -77,6 +77,7 @@ end
 class Rejim
   @key = "keys"*4
   def self.read text
+    text += "0"*(text.size%16)
     blocks_kol = text.size/16
     result = []
     g = "0"*16
@@ -92,4 +93,12 @@ end
 
 text = "test"*4
 podpis = Podpis.podpis(text)
-p podpis[:s].to_byte_array
+p_s = podpis[:s].to_byte_array.pack("c*")
+p_s += " "*((16 - p_s.size)%16)
+p_r = podpis[:r].to_byte_array.pack("c*")
+p_r += " "*((16 - p_r.size)%16)
+shifr_with_podpis = Rejim.read(text + p_s + p_r)
+deshifr = Rejim.read(shifr_with_podpis)
+r = deshifr.slice!(-16,16).rstrip.bytes.inject(0){|pr,n| pr*256+n}
+s = deshifr.slice!(-16,16).rstrip.bytes.inject(0){|pr,n| pr*256+n}
+p Podpis.check({:s => s, :r => r}, deshifr)
